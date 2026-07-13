@@ -3,549 +3,712 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>배고픈 학생 소영의 맛집 아카이브</title>
+    <title>배고픈 학생 소영의 아카이브</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts - Pretendard 대체 및 Noto Sans KR -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brandOrange: '#FF6B35',
+                        darkBg: '#1E1E24',
+                        darkCard: '#2B2D42',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Playfair+Display:ital,wght@0,700;1,400&display=swap');
+        
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background-color: #FFFDF9; /* 소프트 베이지 */
-            color: #2B2D42; /* 세련된 차콜 */
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
-        .text-playfair {
-            font-family: 'Playfair Display', serif;
+
+        /* 커스텀 마우스 커서 스타일 (데스크톱 전용) */
+        @media (pointer: fine) {
+            body {
+                cursor: none;
+            }
+            a, button, select, input, textarea {
+                cursor: none !important;
+            }
         }
-        /* Custom Colors & Shadows */
-        .color-primary { color: #FF6B35; } /* 웜 오렌지 */
-        .bg-primary { background-color: #FF6B35; }
-        .bg-primary-light { background-color: #FFF3EE; }
-        .border-primary { border-color: #FF6B35; }
-        .shadow-custom {
-            box-shadow: 0 10px 30px -10px rgba(255, 107, 53, 0.15);
+
+        /* 스크롤바 디자인 */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-        .shadow-hover {
-            transition: all 0.3s ease;
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
         }
-        .shadow-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px -15px rgba(255, 107, 53, 0.25);
+        .dark ::-webkit-scrollbar-track {
+            background: #2b2d42;
         }
-        /* Smooth Scroll */
-        html {
-            scroll-behavior: smooth;
-        }
-        /* Active Tab Underline Style */
-        .tab-active {
-            color: #FF6B35;
-            border-bottom: 3px solid #FF6B35;
+        ::-webkit-scrollbar-thumb {
+            background: #FF6B35;
+            border-radius: 4px;
         }
     </style>
 </head>
-<body class="overflow-x-hidden">
+<body class="bg-[#FFFDF9] text-[#2B2D42] dark:bg-darkBg dark:text-gray-100 overflow-x-hidden selection:bg-orange-100 selection:text-orange-900">
 
-    <!-- 1. HERO SECTION -->
-    <header class="relative min-h-screen flex flex-col justify-between bg-gradient-to-b from-[#FFF5EF] to-[#FFFDF9] px-6 py-8">
-        <!-- Top Navigation Bar -->
-        <nav class="max-w-6xl w-full mx-auto flex justify-between items-center z-10">
-            <div class="flex items-center gap-2">
+    <!-- 1. 스크롤 진행률 바 -->
+    <div id="progressBar" class="fixed top-0 left-0 h-1 bg-brandOrange z-50 transition-all duration-700" style="width: 0%;"></div>
+
+    <!-- 2. 은은한 배경 파티클 효과 (HTML5 Canvas) -->
+    <canvas id="particleCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-40 dark:opacity-20"></canvas>
+
+    <!-- 3. 케이크 이모지 커스텀 마우스 커서 -->
+    <div id="cakeCursor" class="fixed pointer-events-none z-[9999] text-2xl hidden md:block select-none transform -translate-x-1/2 -translate-y-1/2">🍰</div>
+
+    <!-- 4. 네비게이션 바 -->
+    <nav class="fixed top-0 w-full z-40 bg-[#FFFDF9]/80 dark:bg-darkBg/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 transition-colors">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
                 <span class="text-2xl">🧑‍🎓</span>
-                <span class="font-bold text-lg tracking-tight">소영's Room</span>
+                <span class="font-bold tracking-tight text-lg" data-key="navLogo">소영's Room</span>
             </div>
-            <div class="flex gap-6 text-sm font-medium text-gray-600">
-                <a href="#about" class="hover:text-[#FF6B35] transition-colors">소개</a>
-                <a href="#strengths" class="hover:text-[#FF6B35] transition-colors">강점</a>
-                <a href="#gourmet" class="hover:text-[#FF6B35] transition-colors">맛집지도</a>
-                <a href="#guestbook" class="hover:text-[#FF6B35] transition-colors">방명록</a>
-            </div>
-        </nav>
-
-        <!-- Main Hero Content -->
-        <div class="max-w-4xl w-full mx-auto my-auto text-center z-10 px-4">
-            <span class="inline-block bg-primary-light text-[#FF6B35] text-xs md:text-sm font-semibold px-4 py-1.5 rounded-full mb-6 uppercase tracking-wider animate-bounce">
-                Welcome to my foodie space!
-            </span>
-            <h1 class="text-4xl md:text-6xl font-black leading-tight md:leading-snug text-[#2B2D42] mb-6">
-                새로운 맛을 찾아 떠나는<br>
-                <span class="text-[#FF6B35] relative">
-                    맛집 탐방러, 박소영
-                    <span class="absolute bottom-1 left-0 w-full h-3 bg-[#FF6B35]/10 -z-10"></span>
-                </span>입니다.
-            </h1>
-            <p class="text-lg md:text-xl text-gray-600 font-light max-w-2xl mx-auto mb-10 leading-relaxed">
-                공부할 때보다 맛집 찾을 때 머리가 회전하는 대학생, <br class="hidden md:block">
-                일상이 지루할 땐 한 그릇의 요리에서 세상을 뒤흔들 영감을 찾아냅니다.
-            </p>
-            <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
-                <a href="#gourmet" class="w-full sm:w-auto px-8 py-4 bg-[#FF6B35] text-white font-bold rounded-xl shadow-lg shadow-orange-500/20 hover:bg-[#e05621] transition-all transform hover:-translate-y-0.5 text-center">
-                    인생 맛집 탐방하기 🗺️
-                </a>
-                <a href="#about" class="w-full sm:w-auto px-8 py-4 bg-white text-gray-700 font-bold rounded-xl border border-gray-200 shadow-sm hover:bg-gray-50 transition-all text-center">
-                    나에 대해 더 알아보기 👇
-                </a>
+            <div class="flex items-center space-x-6">
+                <!-- 다크모드 토글 버튼 -->
+                <button onclick="toggleDarkMode()" class="text-xl hover:scale-110 transition-transform focus:outline-none p-1 rounded-lg" id="darkToggleBtn">☀️</button>
+                <!-- 언어 전환 버튼 -->
+                <button onclick="toggleLanguage()" class="text-xs font-bold border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full hover:bg-orange-50 dark:hover:bg-gray-800 transition-all" id="langBtn">EN</button>
             </div>
         </div>
+    </nav>
 
-        <!-- Bouncy Arrow Indicator -->
-        <div class="flex justify-center z-10">
-            <a href="#about" class="flex flex-col items-center gap-1.5 text-xs text-gray-400 hover:text-[#FF6B35] transition-colors">
-                <span>SCROLL DOWN</span>
-                <svg class="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-                </svg>
-            </a>
-        </div>
-
-        <!-- Abstract Decorative Shapes -->
-        <div class="absolute top-1/4 left-10 w-24 h-24 bg-[#FF6B35]/5 rounded-full filter blur-xl"></div>
-        <div class="absolute bottom-1/4 right-10 w-36 h-36 bg-[#FF6B35]/10 rounded-full filter blur-2xl"></div>
-    </header>
-
-    <!-- 2. ABOUT ME SECTION -->
-    <section id="about" class="py-24 bg-white px-6">
-        <div class="max-w-5xl mx-auto">
-            <div class="text-center mb-16">
-                <h2 class="text-xs uppercase tracking-widest text-[#FF6B35] font-bold mb-3">Who I Am</h2>
-                <h3 class="text-3xl md:text-4xl font-extrabold text-[#2B2D42]">저는 이런 사람이에요</h3>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
-                <!-- Profile Image Area -->
-                <div class="md:col-span-5 flex justify-center">
-                    <div class="relative w-72 h-72 md:w-80 md:h-80">
-                        <!-- Background Circle Decoration -->
-                        <div class="absolute inset-0 bg-[#FFF3EE] rounded-3xl transform rotate-6 scale-95 transition-transform duration-500 hover:rotate-12"></div>
-                        <!-- Profile Card Representation -->
-                        <div class="absolute inset-0 bg-white border-2 border-dashed border-[#FF6B35]/30 rounded-3xl p-6 flex flex-col justify-between shadow-custom">
-                            <div class="flex justify-between items-start">
-                                <span class="bg-[#FF6B35]/10 text-[#FF6B35] text-xs font-semibold px-2.5 py-1 rounded-md">ID CARD</span>
-                                <span class="text-xl">🍕</span>
-                            </div>
-                            <div class="text-center my-4">
-                                <!-- Fun SVG Avatar representing 'Hungry Student' -->
-                                <svg class="w-24 h-24 mx-auto mb-3 text-gray-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="50" cy="40" r="24" fill="#FFEAE2" />
-                                    <!-- Hat -->
-                                    <path d="M26 40C30 20 70 20 74 40H26Z" fill="#FF6B35" />
-                                    <!-- Face details -->
-                                    <circle cx="42" cy="42" r="2" fill="#2B2D42" />
-                                    <circle cx="58" cy="42" r="2" fill="#2B2D42" />
-                                    <path d="M45 52C48 55 52 55 55 52" stroke="#2B2D42" stroke-width="2" stroke-linecap="round"/>
-                                    <!-- Body -->
-                                    <path d="M20 85C20 70 30 60 50 60C70 60 80 70 80 85H20Z" fill="#FFEAE2" />
-                                    <path d="M35 60L50 72L65 60H35Z" fill="#FF8C42" />
-                                </svg>
-                                <h4 class="text-xl font-bold text-[#2B2D42]">박소영</h4>
-                                <p class="text-sm text-gray-500 mt-1">닉네임: 배고픈 학생 🧑‍🎓</p>
-                            </div>
-                            <div class="flex justify-center gap-2">
-                                <span class="w-2.5 h-2.5 bg-red-400 rounded-full"></span>
-                                <span class="w-2.5 h-2.5 bg-yellow-400 rounded-full"></span>
-                                <span class="w-2.5 h-2.5 bg-green-400 rounded-full"></span>
-                            </div>
-                        </div>
-                    </div>
+    <!-- 메인 콘텐츠 영역 (Canvas 및 z-index 고려) -->
+    <main class="relative z-10 pt-24 pb-12 px-6 max-w-6xl mx-auto">
+        
+        <!-- 5. HERO SECTION -->
+        <header class="mb-24 flex flex-col md:flex-row items-center gap-10 min-h-[60vh] justify-center">
+            <div class="flex-1">
+                <div class="inline-block px-3 py-1 bg-orange-100 dark:bg-orange-950/50 text-[#FF6B35] text-xs font-bold rounded-full mb-4" data-key="heroBadge">MY FOODIE SPACE</div>
+                <!-- 타이핑 애니메이션이 적용될 제목 -->
+                <h1 class="text-3xl md:text-5xl font-black leading-tight min-h-[4rem] md:min-h-[6rem]" id="typingTitle"></h1>
+                <p id="heroDesc" class="text-gray-600 dark:text-gray-300 leading-relaxed max-w-xl mb-8 mt-4" data-key="heroDesc">
+                    공부할 때보다 맛집 찾을 때 머리가 회전하는 대학생, 일상이 지루할 땐 한 그릇의 요리에서 세상을 뒤흔들 영감을 찾아냅니다.
+                </p>
+                <div class="flex flex-wrap gap-3">
+                    <span class="bg-white dark:bg-darkCard px-4 py-2 rounded-lg border border-gray-100 dark:border-gray-800 shadow-sm font-bold text-xs">#프로탐방러 🧭</span>
+                    <span class="bg-white dark:bg-darkCard px-4 py-2 rounded-lg border border-gray-100 dark:border-gray-800 shadow-sm font-bold text-xs" data-key="tagChallenge">#새로운음식도전 🌶️</span>
+                    <span class="bg-white dark:bg-darkCard px-4 py-2 rounded-lg border border-gray-100 dark:border-gray-800 shadow-sm font-bold text-xs">#얼죽아 ❄️</span>
                 </div>
-
-                <!-- Bio & Info Area -->
-                <div class="md:col-span-7 space-y-6">
-                    <div class="bg-[#FFFDF9] p-6 rounded-2xl border border-gray-100 shadow-sm">
-                        <span class="text-sm font-semibold text-gray-400">TMI & Identity</span>
-                        <p class="text-base text-gray-700 mt-3 leading-relaxed">
-                            시험 기간에도 도서관 식당 메뉴보다 학교 밖 골목길 맛집 지도를 먼저 머릿속에 완성하는 자칭 <strong class="text-[#FF6B35]">배고픈 학생</strong>이자 프로 푸드 아키텍트입니다. 맛있는 냄새가 나면 발걸음이 자동으로 멈추고, 맛있는 음식 앞에서는 그 누구보다 빛나는 리액션을 뿜어냅니다!
-                        </p>
-                    </div>
-
-                    <!-- HashTags Grid -->
-                    <div class="flex flex-wrap gap-2.5">
-                        <span class="bg-[#FF6B35]/10 text-[#FF6B35] font-bold text-sm px-4 py-2 rounded-xl">#프로탐방러 🧭</span>
-                        <span class="bg-[#FF8C42]/10 text-[#FF8C42] font-bold text-sm px-4 py-2 rounded-xl">#새로운음식도전 🌶️</span>
-                        <span class="bg-blue-50 text-blue-600 font-bold text-sm px-4 py-2 rounded-xl">#얼죽아 ❄️</span>
-                        <span class="bg-[#FFF3EE] text-[#FF6B35] font-bold text-sm px-4 py-2 rounded-xl">#디저트배는따로 🍰</span>
-                    </div>
-
-                    <!-- Mini Info list -->
-                    <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
-                        <div>
-                            <span class="text-xs text-gray-400 block mb-0.5">최애 음식</span>
-                            <span class="font-bold text-[#2B2D42]">바삭한 것 & 든든한 국밥</span>
-                        </div>
-                        <div>
-                            <span class="text-xs text-gray-400 block mb-0.5">활동 반경</span>
-                            <span class="font-bold text-[#2B2D42]">성수동 / 망원동 / 대전 원정</span>
-                        </div>
+            </div>
+            <div class="w-64 h-64 md:w-80 md:h-80 relative flex-shrink-0">
+                <div class="absolute inset-0 bg-brandOrange opacity-10 rounded-3xl rotate-6"></div>
+                <div class="absolute inset-0 bg-white dark:bg-darkCard border border-gray-100 dark:border-gray-800 rounded-3xl overflow-hidden shadow-xl p-4">
+                    <div class="w-full h-full rounded-2xl bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                        <img src="박소영소개사진.jpeg" alt="소영 프로필 사진" class="w-full h-full object-cover">
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </header>
 
-    <!-- 3. STRENGTHS SECTION -->
-    <section id="strengths" class="py-24 bg-[#FFF5EF] px-6">
-        <div class="max-w-5xl mx-auto">
+        <!-- 6. ABOUT ME (소개 & 강점) SECTION -->
+        <section class="mb-24">
             <div class="text-center mb-16">
-                <h2 class="text-xs uppercase tracking-widest text-[#FF6B35] font-bold mb-3">Our Core Power</h2>
-                <h3 class="text-3xl md:text-4xl font-extrabold text-[#2B2D42]">제가 가진 미식력(力) 3가지</h3>
-                <p class="text-gray-500 mt-4 text-sm max-w-md mx-auto">
-                    단순히 먹는 것에 끝나지 않는 '배고픈 학생' 소영만의 전문적인 강점을 소개합니다.
+                <h2 class="text-xs uppercase tracking-widest text-[#FF6B35] font-bold mb-3" data-key="aboutSubtitle">WHO I AM</h2>
+                <h3 class="text-3xl font-extrabold" data-key="aboutTitle">저를 소개할게요!</h3>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white dark:bg-darkCard p-8 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                    <h4 class="text-xl font-bold mb-4" data-key="introTitle">🙋‍♀️ 배고픈 학생, 소영</h4>
+                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed" data-key="introText">
+                        시험 기간에도 도서관 메뉴보다 학교 밖 골목길 맛집 지도를 먼저 머릿속에 완성하는 자칭 '배고픈 학생'입니다. 맛있는 냄새가 나면 발걸음이 자동으로 멈추고, <span class="text-brandOrange font-bold">새로운 음식에 도전하는 것을 좋아합니다.</span>
+                    </p>
+                </div>
+                <div class="bg-white dark:bg-darkCard p-8 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                    <h4 class="text-xl font-bold mb-4" data-key="strengthTitle">💪 저만의 특별한 맛집 레이더</h4>
+                    <ul class="space-y-4 text-sm text-gray-600 dark:text-gray-300">
+                        <li class="flex gap-2">
+                            <span>🔍</span>
+                            <span data-key="strength1">**광고 필터링 레이더:** SNS의 수많은 협찬 광고 리뷰를 매의 눈으로 거르고 찐 노포를 찾아냅니다.</span>
+                        </li>
+                        <li class="flex gap-2">
+                            <span>🧁</span>
+                            <span data-key="strength2">**완벽한 디저트 동선:** 짠맛 뒤엔 무조건 단맛! 식사 후 최적의 디저트 배합을 설계하는 능력이 있습니다.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. GOURMET ARCHIVE SECTION -->
+        <section class="mb-24">
+            <div class="text-center mb-12">
+                <h2 class="text-xs uppercase tracking-widest text-[#FF6B35] font-bold mb-3" data-key="gourmetSubtitle">SOYEONG'S PICK</h2>
+                <h3 class="text-3xl font-extrabold mb-4" data-key="gourmetTitle">소영's 최고의 인생 맛집</h3>
+            </div>
+
+            <!-- 카테고리 필터 탭 -->
+            <div class="flex justify-center mb-12 max-w-xs mx-auto border-b border-gray-100 dark:border-gray-800">
+                <button onclick="switchTab('meal')" id="tabMeal" class="flex-1 py-3 text-center font-bold text-[#FF6B35] border-b-2 border-[#FF6B35] transition-all" data-key="tabMeal">인생 식사 🍲</button>
+                <button onclick="switchTab('dessert')" id="tabDessert" class="flex-1 py-3 text-center font-bold text-gray-400 border-b-2 border-transparent transition-all" data-key="tabDessert">인생 디저트 🍰</button>
+            </div>
+
+            <!-- 식사 카드 그리드 -->
+            <div id="gourmetMeal" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- 성수 능동미나리 -->
+                <div class="bg-white dark:bg-darkCard rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all flex flex-col h-full">
+                    <div class="h-48 overflow-hidden relative bg-gray-100">
+                        <img src="성수능동미나리.jpg" alt="성수 능동미나리" class="w-full h-full object-cover">
+                        <div class="absolute top-4 right-4 bg-white/90 dark:bg-darkBg/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-brandOrange">성수</div>
+                    </div>
+                    <div class="p-6 flex flex-col justify-between flex-grow">
+                        <div>
+                            <h4 class="font-bold text-lg mb-1" data-key="m1Name">성수 능동미나리</h4>
+                            <p class="text-xs text-orange-400 font-bold mb-3" data-key="m1Menu">미나리 곰탕 + 육회비빔밥 조합</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4" data-key="m1Desc">향긋한 생미나리와 정성 어린 육수의 조합. 곰탕의 깊은 맛과 미나리의 상큼함이 입안을 가득 채웁니다.</p>
+                        </div>
+                        <div class="bg-orange-50 dark:bg-orange-950/20 p-3 rounded-xl text-xs text-gray-600 dark:text-orange-300">
+                            <span class="font-bold text-brandOrange block mb-1">💡 Soyeong's Tip</span>
+                            <span data-key="m1Tip">육회비빔밥 위에 신선한 미나리 무침을 푸짐하게 얹어서 한 입에 드셔보세요!</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- 망원 강동원 -->
+                <div class="bg-white dark:bg-darkCard rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all flex flex-col h-full">
+                    <div class="h-48 overflow-hidden relative bg-gray-100">
+                        <img src="강동원.jpeg" alt="망원 강동원" class="w-full h-full object-cover">
+                        <div class="absolute top-4 right-4 bg-white/90 dark:bg-darkBg/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-brandOrange">망원</div>
+                    </div>
+                    <div class="p-6 flex flex-col justify-between flex-grow">
+                        <div>
+                            <h4 class="font-bold text-lg mb-1" data-key="m2Name">강동원 (중식당)</h4>
+                            <p class="text-xs text-orange-400 font-bold mb-3" data-key="m2Menu">흑미 탕수육 & 짬뽕</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4" data-key="m2Desc">까만 비주얼의 흑미 탕수육은 극강의 겉바속촉 식감을 선사하며, 칼칼하게 불맛을 잘 낸 짬뽕과의 밸런스가 최고입니다.</p>
+                        </div>
+                        <div class="bg-orange-50 dark:bg-orange-950/20 p-3 rounded-xl text-xs text-gray-600 dark:text-orange-300">
+                            <span class="font-bold text-brandOrange block mb-1">💡 Soyeong's Tip</span>
+                            <span data-key="m2Tip">유린기와 짬뽕 국물의 대조되는 조합도 정말 훌륭하니 여럿이 가서 전부 즐기세요!</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- 대전 태화장 -->
+                <div class="bg-white dark:bg-darkCard rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all flex flex-col h-full">
+                    <div class="h-48 overflow-hidden relative bg-gray-100">
+                        <img src="대전 태화장.jpg" alt="대전 태화장" class="w-full h-full object-cover">
+                        <div class="absolute top-4 right-4 bg-white/90 dark:bg-darkBg/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-brandOrange">대전</div>
+                    </div>
+                    <div class="p-6 flex flex-col justify-between flex-grow">
+                        <div>
+                            <h4 class="font-bold text-lg mb-1" data-key="m3Name">대전 태화장</h4>
+                            <p class="text-xs text-orange-400 font-bold mb-3" data-key="m3Menu">멘보샤 & 백년짜장</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4" data-key="m3Desc">먹을텐데에서도 극찬한 대전 최고 노포 중 하나. 식빵 사이에 다진 새우가 꽉 찬 육즙 가득한 멘보샤는 단연 1등입니다.</p>
+                        </div>
+                        <div class="bg-orange-50 dark:bg-orange-950/20 p-3 rounded-xl text-xs text-gray-600 dark:text-orange-300">
+                            <span class="font-bold text-brandOrange block mb-1">💡 Soyeong's Tip</span>
+                            <span data-key="m3Tip">성심당에서 빵을 잔뜩 사기 전에 방문해 기력을 완벽히 충전해두는 영양 코스로 제격입니다.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 디저트 카드 그리드 (기본 숨김) -->
+            <div id="gourmetDessert" class="grid grid-cols-1 md:grid-cols-2 gap-8 hidden">
+                <!-- 메이크어케이크 -->
+                <div class="bg-white dark:bg-darkCard rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all flex flex-col md:flex-row h-full">
+                    <div class="md:w-1/2 h-48 md:h-auto overflow-hidden relative bg-gray-100">
+                        <img src="https://placehold.co/600x400/FFF3EE/FF6B35?text=Cake" alt="메이크어케이크" class="w-full h-full object-cover">
+                        <div class="absolute top-4 right-4 bg-white/90 dark:bg-darkBg/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-brandOrange" data-key="locBundang">분당</div>
+                    </div>
+                    <div class="p-6 md:w-1/2 flex flex-col justify-between flex-grow">
+                        <div>
+                            <h4 class="font-bold text-lg mb-1" data-key="d1Name">메이크어케이크</h4>
+                            <p class="text-xs text-orange-400 font-bold mb-3" data-key="d1Menu">제철 생과일 생크림 케이크</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4" data-key="d1Desc">정직한 동물성 생크림만을 고집하여 극강의 촉촉하고 부드러운 케이크를 만듭니다. 입안에 넣는 순간 사르르 녹아내려요.</p>
+                        </div>
+                        <div class="bg-orange-50 dark:bg-orange-950/20 p-3 rounded-xl text-xs text-gray-600 dark:text-orange-300">
+                            <span class="font-bold text-brandOrange block mb-1">💡 Soyeong's Tip</span>
+                            <span data-key="d1Tip">달달한 크림 한 입 후엔 꼭 아이스 아메리카노(얼죽아 픽!) 수혈이 진리입니다.</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- 아마 -->
+                <div class="bg-white dark:bg-darkCard rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all flex flex-col md:flex-row h-full">
+                    <div class="md:w-1/2 h-48 md:h-auto overflow-hidden relative bg-gray-100">
+                        <img src="https://placehold.co/600x400/FFF3EE/FF6B35?text=AMA" alt="아마 카페" class="w-full h-full object-cover">
+                        <div class="absolute top-4 right-4 bg-white/90 dark:bg-darkBg/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-brandOrange" data-key="locSecret">아지트</div>
+                    </div>
+                    <div class="p-6 md:w-1/2 flex flex-col justify-between flex-grow">
+                        <div>
+                            <h4 class="font-bold text-lg mb-1" data-key="d2Name">AMA (아마)</h4>
+                            <p class="text-xs text-orange-400 font-bold mb-3" data-key="d2Menu">수제 구움과자 & 티 블렌딩</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4" data-key="d2Desc">차분하고 예쁜 분위기의 골목 카페. 매일 정성스럽게 구워내는 촉촉하고 달콤한 피낭시에, 티와의 조합이 감동적입니다.</p>
+                        </div>
+                        <div class="bg-orange-50 dark:bg-orange-950/20 p-3 rounded-xl text-xs text-gray-600 dark:text-orange-300">
+                            <span class="font-bold text-brandOrange block mb-1">💡 Soyeong's Tip</span>
+                            <span data-key="d2Tip">나만 알고 싶은 보석 같은 카페이니 조용한 시간대에 찾아 사색을 곁들이세요.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. FUTURE ROADMAP (향후 계획) SECTION -->
+        <section class="mb-24 bg-[#F5F1E9] dark:bg-[#25252d] p-10 md:p-16 rounded-[40px]">
+            <div class="mb-12">
+                <h2 class="text-[#FF6B35] font-bold uppercase tracking-wider text-xs mb-3" data-key="roadSubtitle">Future RoadMap</h2>
+                <h3 class="text-3xl font-extrabold mb-4" data-key="roadTitle">앞으로의 맛있는 로드맵 🏃‍♀️</h3>
+                <p class="text-gray-600 dark:text-gray-300 max-w-xl text-sm leading-relaxed" data-key="roadDesc">
+                    더 깊고 다양한 음식을 즐겁게 맛보기 위해서 기분 좋은 원동력을 준비하고 있는 예비 개발자 소영의 성장 타임라인입니다.
                 </p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Strength Card 1 -->
-                <div class="bg-white p-8 rounded-2xl shadow-custom shadow-hover border border-orange-100">
-                    <div class="w-12 h-12 bg-[#FF6B35]/10 rounded-xl flex items-center justify-center text-2xl mb-6">
-                        🔍
-                    </div>
-                    <h4 class="text-xl font-extrabold text-[#2B2D42] mb-3">광고 필터링 레이더</h4>
-                    <p class="text-sm text-gray-500 leading-relaxed">
-                        소셜 미디어의 수많은 광고성 리뷰 속에서 진짜 '찐 노포'와 숨겨진 보석들을 매의 눈으로 걸러내는 든든한 정보 판별 능력을 갖추고 있습니다.
-                    </p>
+                <!-- 카드 1 -->
+                <div class="bg-white dark:bg-darkCard p-8 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm hover:-translate-y-2 transition-transform duration-300">
+                    <span class="text-3xl mb-4 block">💼</span>
+                    <h4 class="font-bold text-lg mb-2" data-key="plan1Title">하반기 공채 당당히 도전하기</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed" data-key="plan1Desc">더 알찬 맛집 정복 자금을 다지기 위해 가고 싶던 훌륭한 IT 기업 개발 공채 직무에 뜨거운 각오로 도전합니다.</p>
                 </div>
-
-                <!-- Strength Card 2 -->
-                <div class="bg-white p-8 rounded-2xl shadow-custom shadow-hover border border-orange-100">
-                    <div class="w-12 h-12 bg-[#FF6B35]/10 rounded-xl flex items-center justify-center text-2xl mb-6">
-                        🗺️
-                    </div>
-                    <h4 class="text-xl font-extrabold text-[#2B2D42] mb-3">완벽한 맛의 빌드업</h4>
-                    <p class="text-sm text-gray-500 leading-relaxed">
-                        자극적인 식사 후에는 영혼을 촉촉하게 채워줄 인생 디저트와 깔끔한 '얼죽아'로 정돈하는, 흠잡을 곳 없는 식후 동선 연계 마스터입니다.
-                    </p>
+                <!-- 카드 2 -->
+                <div class="bg-white dark:bg-darkCard p-8 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm hover:-translate-y-2 transition-transform duration-300">
+                    <span class="text-3xl mb-4 block">🚀</span>
+                    <h4 class="font-bold text-lg mb-2" data-key="plan2Title">SSAFY에서 고퀄 프로젝트 빌드</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed" data-key="plan2Desc">싸피(SSAFY)에 깊이 몰입하며, 나만의 미식 아키텍처 노하우를 녹여 유니크하고 맛있는 실무급 웹 프로젝트를 완수합니다.</p>
                 </div>
-
-                <!-- Strength Card 3 -->
-                <div class="bg-white p-8 rounded-2xl shadow-custom shadow-hover border border-orange-100">
-                    <div class="w-12 h-12 bg-[#FF6B35]/10 rounded-xl flex items-center justify-center text-2xl mb-6">
-                        🌶️
-                    </div>
-                    <h4 class="text-xl font-extrabold text-[#2B2D42] mb-3">브레이크 없는 도전정신</h4>
-                    <p class="text-sm text-gray-500 leading-relaxed">
-                        외국 현지의 낯선 길거리 음식부터 새로 탄생하는 핫한 퓨전 요리까지 겁내지 않고 도전하여 미식의 지평을 꾸준히 넓혀가고 있습니다.
-                    </p>
+                <!-- 카드 3 -->
+                <div class="bg-white dark:bg-darkCard p-8 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm hover:-translate-y-2 transition-transform duration-300">
+                    <span class="text-3xl mb-4 block">🎓</span>
+                    <h4 class="font-bold text-lg mb-2" data-key="plan3Title">핵심 전공 자격증 완수</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed" data-key="plan3Desc">기본기가 확실한 고스펙 프론트엔드 역량을 공식적으로 증명할 수 있는 알찬 핵심 자격 자격증을 알토란같이 취득합니다.</p>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- 4. GOURMET LIST SECTION -->
-    <section id="gourmet" class="py-24 bg-white px-6">
-        <div class="max-w-5xl mx-auto">
-            <div class="text-center mb-12">
-                <h2 class="text-xs uppercase tracking-widest text-[#FF6B35] font-bold mb-3">Soyeong's Signature Map</h2>
-                <h3 class="text-3xl md:text-4xl font-extrabold text-[#2B2D42] mb-4">소영's 최고의 레스토랑 & 디저트</h3>
-                <p class="text-gray-500 text-sm max-w-lg mx-auto">
-                    한 번 먹어보면 도저히 잊을 수 없어 직접 큐레이팅한 맛의 최고 성지들을 엄선했습니다.
-                </p>
-            </div>
-
-            <!-- Tab Buttons to toggle between Restaurants and Desserts -->
-            <div class="flex justify-center mb-12 border-b border-gray-100 max-w-xs mx-auto">
-                <button id="btn-savory" onclick="switchCategory('savory')" class="flex-1 py-4 text-center font-bold text-[#FF6B35] border-b-2 border-[#FF6B35] hover:text-[#FF6B35] transition-all">
-                    인생 식사 (Meal) 🥩
-                </button>
-                <button id="btn-sweet" onclick="switchCategory('sweet')" class="flex-1 py-4 text-center font-bold text-gray-400 border-b-2 border-transparent hover:text-[#FF6B35] transition-all">
-                    인생 디저트 (Dessert) 🍰
-                </button>
-            </div>
-
-            <!-- SAVORY CATEGORY LIST -->
-            <div id="category-savory" class="grid grid-cols-1 md:grid-cols-3 gap-8 transition-opacity duration-300">
-                <!-- Card 1: 성수 능동미나리 -->
-                <div class="bg-[#FFFDF9] border border-gray-100 rounded-3xl overflow-hidden shadow-custom shadow-hover flex flex-col h-full">
-                    <div class="h-48 bg-gradient-to-br from-[#FFEAE2] to-[#FFD5C6] flex items-center justify-center text-4xl relative">
-                        🍲
-                        <span class="absolute top-4 right-4 bg-white/80 text-[#FF6B35] text-xs font-bold px-3 py-1 rounded-full backdrop-blur-sm">성수</span>
-                    </div>
-                    <div class="p-6 flex flex-col justify-between flex-grow">
-                        <div>
-                            <h4 class="text-xl font-extrabold text-[#2B2D42] mb-2">성수 능동미나리</h4>
-                            <p class="text-xs text-gray-400 font-semibold mb-3">추천 메뉴: 미나리 곰탕 + 육회비빔밥 조합</p>
-                            <p class="text-sm text-gray-600 leading-relaxed mb-4">
-                                "향긋하고 식감 좋은 미나리와 깊은 곰탕 육수의 신선한 만남! 웨이팅이 한 시간이어도 아깝지 않은 성수 최고의 핫플레이스입니다."
-                            </p>
-                        </div>
-                        <div class="bg-[#FF6B35]/5 p-3 rounded-xl">
-                            <span class="text-xs font-bold text-[#FF6B35] block mb-0.5">💡 소영's 시크릿 꿀팁</span>
-                            <span class="text-xs text-gray-600">육회비빔밥 위에 미나리 무침을 가득 얹어 먹는 것은 배고픈 학생의 절대 국룰!</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 2: 강동원 -->
-                <div class="bg-[#FFFDF9] border border-gray-100 rounded-3xl overflow-hidden shadow-custom shadow-hover flex flex-col h-full">
-                    <div class="h-48 bg-gradient-to-br from-[#FFEAE2] to-[#FFD5C6] flex items-center justify-center text-4xl relative">
-                        🔥
-                        <span class="absolute top-4 right-4 bg-white/80 text-[#FF6B35] text-xs font-bold px-3 py-1 rounded-full backdrop-blur-sm">망원</span>
-                    </div>
-                    <div class="p-6 flex flex-col justify-between flex-grow">
-                        <div>
-                            <h4 class="text-xl font-extrabold text-[#2B2D42] mb-2">강동원 (중식당)</h4>
-                            <p class="text-xs text-gray-400 font-semibold mb-3">추천 메뉴: 흑미 탕수육 & 짬뽕</p>
-                            <p class="text-sm text-gray-600 leading-relaxed mb-4">
-                                "비주얼부터 독특한 흑미 탕수육은 극강의 겉바속촉을 자랑해요. 불맛을 가득 가둬 칼칼하면서도 속이 다 풀리는 국물 맛의 짬뽕은 잊을 수 없습니다."
-                            </p>
-                        </div>
-                        <div class="bg-[#FF6B35]/5 p-3 rounded-xl">
-                            <span class="text-xs font-bold text-[#FF6B35] block mb-0.5">💡 소영's 시크릿 꿀팁</span>
-                            <span class="text-xs text-gray-600">여럿이 가서 유린기, 탕수육, 식사 메뉴를 몽땅 시키는 것이 전방위적 미식 완성을 이룹니다.</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 3: 대전 태화장 -->
-                <div class="bg-[#FFFDF9] border border-gray-100 rounded-3xl overflow-hidden shadow-custom shadow-hover flex flex-col h-full">
-                    <div class="h-48 bg-gradient-to-br from-[#FFEAE2] to-[#FFD5C6] flex items-center justify-center text-4xl relative">
-                        🥢
-                        <span class="absolute top-4 right-4 bg-white/80 text-[#FF6B35] text-xs font-bold px-3 py-1 rounded-full backdrop-blur-sm">대전</span>
-                    </div>
-                    <div class="p-6 flex flex-col justify-between flex-grow">
-                        <div>
-                            <h4 class="text-xl font-extrabold text-[#2B2D42] mb-2">대전 태화장</h4>
-                            <p class="text-xs text-gray-400 font-semibold mb-3">추천 메뉴: 멘보샤 & 백년짜장</p>
-                            <p class="text-sm text-gray-600 leading-relaxed mb-4">
-                                "성시경의 먹을텐데 출연 전부터 맛으로 장악하던 역사 깊은 대전의 보물. 새우가 통째로 꽉 들어찬 멘보샤는 이곳을 이길 자가 없습니다."
-                            </p>
-                        </div>
-                        <div class="bg-[#FF6B35]/5 p-3 rounded-xl">
-                            <span class="text-xs font-bold text-[#FF6B35] block mb-0.5">💡 소영's 시크릿 꿀팁</span>
-                            <span class="text-xs text-gray-600">성심당에서 빵을 한가득 쟁이기 전에 반드시 이곳에서 기름칠을 해두어 체력을 확보해 두세요!</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SWEET CATEGORY LIST (Hidden initially) -->
-            <div id="category-sweet" class="grid grid-cols-1 md:grid-cols-2 gap-8 hidden transition-opacity duration-300">
-                <!-- Card 1: 메이크어케이크 -->
-                <div class="bg-[#FFFDF9] border border-gray-100 rounded-3xl overflow-hidden shadow-custom shadow-hover flex flex-col md:flex-row h-full">
-                    <div class="md:w-2/5 h-48 md:h-auto bg-gradient-to-br from-[#FFE2EE] to-[#FFC9E3] flex items-center justify-center text-5xl relative">
-                        🍰
-                        <span class="absolute top-4 right-4 bg-white/80 text-[#FF6B35] text-xs font-bold px-3 py-1 rounded-full backdrop-blur-sm">분당 / 판교</span>
-                    </div>
-                    <div class="p-6 md:w-3/5 flex flex-col justify-between flex-grow">
-                        <div>
-                            <h4 class="text-xl font-extrabold text-[#2B2D42] mb-2">메이크어케이크</h4>
-                            <p class="text-xs text-gray-400 font-semibold mb-3">추천 메뉴: 동물성 생크림 케이크 & 아이스 아메리카노</p>
-                            <p class="text-sm text-gray-600 leading-relaxed mb-4">
-                                "인위적이지 않은 리얼 백퍼센트 동물성 생크림의 부드러움! 입안에 넣는 순간 사르르 녹아내리며 시험 스트레스가 함께 휘발되는 마법의 케이크집입니다."
-                            </p>
-                        </div>
-                        <div class="bg-[#FF6B35]/5 p-3 rounded-xl">
-                            <span class="text-xs font-bold text-[#FF6B35] block mb-0.5">💡 소영's 시크릿 꿀팁</span>
-                            <span class="text-xs text-gray-600">달콤한 크림과 가장 환상적인 하모니를 만드는 ‘얼죽아’ 전용 아아를 더하면 끝!</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 2: 아마 (AMA) -->
-                <div class="bg-[#FFFDF9] border border-gray-100 rounded-3xl overflow-hidden shadow-custom shadow-hover flex flex-col md:flex-row h-full">
-                    <div class="md:w-2/5 h-48 md:h-auto bg-gradient-to-br from-[#FFE2EE] to-[#FFC9E3] flex items-center justify-center text-5xl relative">
-                        ☕
-                        <span class="absolute top-4 right-4 bg-white/80 text-[#FF6B35] text-xs font-bold px-3 py-1 rounded-full backdrop-blur-sm">카페</span>
-                    </div>
-                    <div class="p-6 md:w-3/5 flex flex-col justify-between flex-grow">
-                        <div>
-                            <h4 class="text-xl font-extrabold text-[#2B2D42] mb-2">AMA (아마)</h4>
-                            <p class="text-xs text-gray-400 font-semibold mb-3">추천 메뉴: 아지트 감성의 수제 구움과자들</p>
-                            <p class="text-sm text-gray-600 leading-relaxed mb-4">
-                                "아담하고 감성 가득한 무드의 비밀 아지트. 갓 구워져 나온 달콤 고소한 구움과자를 먹으며 도란도란 밀린 수다를 즐길 때 최고의 행복을 느낍니다."
-                            </p>
-                        </div>
-                        <div class="bg-[#FF6B35]/5 p-3 rounded-xl">
-                            <span class="text-xs font-bold text-[#FF6B35] block mb-0.5">💡 소영's 시크릿 꿀팁</span>
-                            <span class="text-xs text-gray-600">가게 사장님과 가벼운 인사를 나누어 단골 도장을 받으면 더 소소한 행복이 차오릅니다.</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 5. CALL TO ACTION / GUESTBOOK SECTION -->
-    <section id="guestbook" class="py-24 bg-[#FFF5EF] px-6">
-        <div class="max-w-3xl mx-auto">
-            <div class="bg-white rounded-3xl p-8 md:p-12 shadow-custom border border-orange-100">
+        <!-- 9. GUESTBOOK SECTION (LocalStorage 영구 저장) -->
+        <section id="guestbook" class="max-w-3xl mx-auto">
+            <div class="bg-white dark:bg-darkCard p-10 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
                 <div class="text-center mb-10">
-                    <span class="text-2xl">✍️</span>
-                    <h3 class="text-3xl font-extrabold text-[#2B2D42] mt-3">소영이에게 흔적 남기기</h3>
-                    <p class="text-sm text-gray-500 mt-2">
-                        오늘 저를 처음 알게 되신 여러분, 가벼운 소감이나 가보고 싶은 식당을 자랑해 주세요!
-                    </p>
+                    <span class="text-2xl">💬</span>
+                    <h2 class="text-2xl font-bold mt-2" data-key="gbTitle">소영에게 한 줄 남기기</h2>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm mt-1" data-key="gbSubtitle">가보고 싶은 소영의 픽 식당이나 응원의 한마디를 나누어주세요.</p>
                 </div>
 
-                <!-- Custom Toast Message Area (hidden by default) -->
-                <div id="toast-message" class="hidden mb-6 p-4 bg-green-50 border border-green-200 text-green-700 text-sm font-semibold rounded-xl text-center">
-                    🎉 성공적으로 방명록이 소영에게 배달되었습니다!
-                </div>
-
-                <!-- Guestbook Form -->
-                <form id="form-guestbook" class="space-y-5" onsubmit="addEntry(event)">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1.5">이름 또는 닉네임</label>
-                            <input type="text" id="input-name" required placeholder="예: 밥좋아하는학생" class="w-full px-4 py-3 bg-[#FFFDF9] border border-gray-200 rounded-xl focus:outline-none focus:border-[#FF6B35] text-sm transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1.5">가장 가보고 싶은 최애 픽</label>
-                            <select id="input-choice" class="w-full px-4 py-3 bg-[#FFFDF9] border border-gray-200 rounded-xl focus:outline-none focus:border-[#FF6B35] text-sm transition-all text-gray-600">
-                                <option value="성수 능동미나리">성수 능동미나리 🍲</option>
-                                <option value="망원 강동원">망원 강동원 🔥</option>
-                                <option value="대전 태화장">대전 태화장 🥢</option>
-                                <option value="메이크어케이크">메이크어케이크 🍰</option>
-                                <option value="AMA 아마">AMA 아마 ☕</option>
-                            </select>
-                        </div>
+                <form onsubmit="handleFormSubmit(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="gbName" required placeholder="이름 (Name)" class="w-full px-5 py-3 rounded-xl bg-gray-50 dark:bg-darkBg border-none focus:ring-2 focus:ring-orange-200 text-sm">
+                        <select id="gbPick" class="w-full px-5 py-3 rounded-xl bg-gray-50 dark:bg-darkBg border-none focus:ring-2 focus:ring-orange-200 text-sm text-gray-500">
+                            <option value="" disabled selected data-key="gbSelectDefault">가보고 싶은 인생맛집 픽</option>
+                            <option value="성수 능동미나리">성수 능동미나리 🍲</option>
+                            <option value="망원 강동원">망원 강동원 🔥</option>
+                            <option value="대전 태화장">대전 태화장 🥢</option>
+                            <option value="메이크어케이크">메이크어케이크 🍰</option>
+                            <option value="AMA 아마">AMA 아마 ☕</option>
+                        </select>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1.5">남기고 싶은 한 줄 메시지</label>
-                        <textarea id="input-message" rows="3" required placeholder="예: 소영님! 추천 맛집 리스트 쏙 마음에 드네요. 다음에 꿀정보 더 알려주세요!" class="w-full px-4 py-3 bg-[#FFFDF9] border border-gray-200 rounded-xl focus:outline-none focus:border-[#FF6B35] text-sm transition-all"></textarea>
-                    </div>
-                    <button type="submit" class="w-full py-4 bg-[#FF6B35] text-white font-bold rounded-xl shadow-lg hover:bg-[#e05621] hover:shadow-orange-500/20 transition-all">
-                        소영에게 따뜻한 메시지 전송하기 💌
-                    </button>
+                    <textarea id="gbMsg" required placeholder="남길 소소한 이야기 (Message)" rows="3" class="w-full px-5 py-3 rounded-xl bg-gray-50 dark:bg-darkBg border-none focus:ring-2 focus:ring-orange-200 text-sm"></textarea>
+                    <button type="submit" class="w-full py-4 bg-brandOrange text-white font-bold rounded-xl hover:bg-[#e85a2a] transition-all shadow-lg shadow-orange-100 dark:shadow-none" data-key="gbSubmitBtn">소영이에게 흔적 보내기 💌</button>
                 </form>
 
-                <!-- Live Feed Container -->
-                <div class="mt-12 pt-8 border-t border-gray-100">
-                    <h4 class="text-sm font-bold text-gray-400 mb-4 tracking-wider uppercase">방명록 실시간 피드</h4>
-                    <div id="feed-container" class="space-y-4 max-h-60 overflow-y-auto pr-2">
-                        <!-- Default Mock Entry 1 -->
-                        <div class="bg-[#FFFDF9] p-4 rounded-xl border border-gray-100 text-sm">
-                            <div class="flex justify-between items-start mb-1">
-                                <span class="font-extrabold text-[#2B2D42]">성심당지킴이</span>
-                                <span class="text-xs text-gray-400 bg-orange-50 text-[#FF6B35] font-bold px-2 py-0.5 rounded">대전 태화장 🥢</span>
-                            </div>
-                            <p class="text-gray-600">태화장 멘보샤 드셔보셨다니 제대로 맛보실 줄 아는 군요! 너무 맛있는 취향 소개네요.</p>
-                        </div>
-                        <!-- Default Mock Entry 2 -->
-                        <div class="bg-[#FFFDF9] p-4 rounded-xl border border-gray-100 text-sm">
-                            <div class="flex justify-between items-start mb-1">
-                                <span class="font-extrabold text-[#2B2D42]">미식새내기</span>
-                                <span class="text-xs text-gray-400 bg-orange-50 text-[#FF6B35] font-bold px-2 py-0.5 rounded">성수 능동미나리 🍲</span>
-                            </div>
-                            <p class="text-gray-600">능동미나리 가보고 싶었는데, 소영님 추천 방식대로 꼭 육회비빔밥에 얹어서 먹어볼게요!</p>
-                        </div>
+                <!-- 실시간 댓글 목록 -->
+                <div class="mt-12">
+                    <h3 class="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-4" data-key="feedTitle">실시간 피드 목록</h3>
+                    <div id="feedList" class="space-y-4 max-h-80 overflow-y-auto pr-2">
+                        <!-- JS 렌더링 -->
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- 6. FOOTER -->
-    <footer class="bg-[#2B2D42] text-gray-400 py-12 px-6">
-        <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-            <div>
-                <p class="font-extrabold text-white text-lg tracking-wide mb-1 flex items-center gap-1.5">
-                    <span>🧑‍🎓</span> 배고픈 학생 소영's 아카이브
-                </p>
-                <p class="text-xs text-gray-500">
-                    © 2026 Park Soyeong. All rights reserved. Made with Love & Orange.
-                </p>
-            </div>
-            <div class="flex items-center gap-6">
-                <!-- Mock Link Icons or Texts -->
-                <a href="#" class="hover:text-white text-sm transition-colors flex items-center gap-1.5">
-                    <span>📸</span> <span>Instagram</span>
-                </a>
-                <a href="mailto:soyeong@example.com" class="hover:text-white text-sm transition-colors flex items-center gap-1.5">
-                    <span>✉️</span> <span>Email</span>
-                </a>
-            </div>
-        </div>
+    </main>
+
+    <!-- 10. FOOTER -->
+    <footer class="mt-24 py-12 bg-darkCard text-gray-400 text-center border-t border-gray-800">
+        <p class="text-xs">© 2026 Soyeong Park Space. All rights reserved. Made with 🧡 & 🍰</p>
     </footer>
 
-    <!-- INTERACTIVE SCRIPTS -->
+    <!-- INTERACTIVE JAVASCRIPT LOGICS -->
     <script>
-        // Tab switching logic for gourmet recommendations
-        function switchCategory(category) {
-            const savoryBtn = document.getElementById('btn-savory');
-            const sweetBtn = document.getElementById('btn-sweet');
-            const savoryList = document.getElementById('category-savory');
-            const sweetList = document.getElementById('category-sweet');
+        // ----------------------------------------
+        // 다국어 데이터 번역 사전 (KO / EN)
+        // ----------------------------------------
+        let currentLang = 'ko';
+        const translations = {
+            ko: {
+                navLogo: "소영's Room",
+                heroBadge: "MY FOODIE SPACE",
+                heroDesc: "공부할 때보다 맛집 찾을 때 머리가 회전하는 대학생, 일상이 지루할 땐 한 그릇의 요리에서 세상을 뒤흔들 영감을 찾아냅니다.",
+                tagChallenge: "#새로운음식도전 🌶️",
+                aboutSubtitle: "WHO I AM",
+                aboutTitle: "저를 소개할게요!",
+                introTitle: "🙋‍♀️ 배고픈 학생, 소영",
+                introText: "시험 기간에도 도서관 메뉴보다 학교 밖 골목길 맛집 지도를 먼저 머릿속에 완성하는 자칭 '배고픈 학생'입니다. 맛있는 냄새가 나면 발걸음이 자동으로 멈추고, 새로운 음식에 도전하는 것을 좋아합니다.",
+                strengthTitle: "💪 저만의 특별한 맛집 레이더",
+                strength1: "**광고 필터링 레이더:** SNS의 수많은 협찬 광고 리뷰를 매의 눈으로 거르고 찐 노포를 찾아냅니다.",
+                strength2: "**완벽한 디저트 동선:** 짠맛 뒤엔 무조건 단맛! 식사 후 최적의 디저트 배합을 설계하는 능력이 있습니다.",
+                gourmetSubtitle: "SOYEONG'S PICK",
+                gourmetTitle: "소영's 최고의 인생 맛집",
+                tabMeal: "인생 식사 🍲",
+                tabDessert: "인생 디저트 🍰",
+                m1Name: "성수 능동미나리",
+                m1Menu: "미나리 곰탕 + 육회비빔밥 조합",
+                m1Desc: "향긋한 생미나리와 정성 어린 육수의 조합. 곰탕의 깊은 맛과 미나리의 상큼함이 입안을 가득 채웁니다.",
+                m1Tip: "육회비빔밥 위에 신선한 미나리 무침을 푸짐하게 얹어서 한 입에 드셔보세요!",
+                m2Name: "강동원 (중식당)",
+                m2Menu: "흑미 탕수육 & 짬뽕",
+                m2Desc: "까만 비주얼의 흑미 탕수육은 극강의 겉바속촉 식감을 선사하며, 칼칼하게 불맛을 잘 낸 짬뽕과의 밸런스가 최고입니다.",
+                m2Tip: "유린기와 짬뽕 국물의 대조되는 조합도 정말 훌륭하니 여럿이 가서 전부 즐기세요!",
+                m3Name: "대전 태화장",
+                m3Menu: "멘보샤 & 백년짜장",
+                m3Desc: "먹을텐데에서도 극찬한 대전 최고 노포 중 하나. 식빵 사이에 다진 새우가 꽉 찬 육즙 가득한 멘보샤는 단연 1등입니다.",
+                m3Tip: "성심당에서 빵을 잔뜩 사기 전에 방문해 기력을 완벽히 충전해두는 영양 코스로 제격입니다.",
+                locBundang: "분당",
+                locSecret: "아지트",
+                d1Name: "메이크어케이크",
+                d1Menu: "제철 생과일 생크림 케이크",
+                d1Desc: "정직한 동물성 생크림만을 고집하여 극강의 촉촉하고 부드러운 케이크를 만듭니다. 입안에 넣는 순간 사르르 녹아내려요.",
+                d1Tip: "달달한 크림 한 입 후엔 꼭 아이스 아메리카노(얼죽아 픽!) 수혈이 진리입니다.",
+                d2Name: "AMA (아마)",
+                d2Menu: "수제 구움과자 & 티 블렌딩",
+                d2Desc: "차분하고 예쁜 분위기의 골목 카페. 매일 정성스럽게 구워내는 촉촉하고 달콤한 피낭시에, 티와의 조합이 감동적입니다.",
+                d2Tip: "나만 알고 싶은 보석 같은 카페이니 조용한 시간대에 찾아 사색을 곁들이세요.",
+                roadSubtitle: "Future RoadMap",
+                roadTitle: "앞으로의 맛있는 로드맵 🏃‍♀️",
+                roadDesc: "더 깊고 다양한 음식을 즐겁게 맛보기 위해서 기분 좋은 원동력을 준비하고 있는 예비 개발자 소영의 성장 타임라인입니다.",
+                plan1Title: "하반기 공채 당당히 도전하기",
+                plan1Desc: "더 알찬 맛집 정복 자금을 다지기 위해 가고 싶던 훌륭한 IT 기업 개발 공채 직무에 뜨거운 각오로 도전합니다.",
+                plan2Title: "SSAFY에서 고퀄 프로젝트 빌드",
+                plan2Desc: "싸피(SSAFY)에 깊이 몰입하며, 나만의 미식 아키텍처 노하우를 녹여 유니크하고 맛있는 실무급 웹 프로젝트를 완수합니다.",
+                plan3Title: "핵심 전공 자격증 완수",
+                plan3Desc: "기본기가 확실한 고스펙 프론트엔드 역량을 공식적으로 증명할 수 있는 알찬 핵심 자격 자격증을 알토란같이 취득합니다.",
+                gbTitle: "소영에게 한 줄 남기기",
+                gbSubtitle: "가보고 싶은 소영의 픽 식당이나 응원의 한마디를 나누어주세요.",
+                gbSelectDefault: "가보고 싶은 인생맛집 픽",
+                gbSubmitBtn: "소영이에게 흔적 보내기 💌",
+                feedTitle: "실시간 피드 목록"
+            },
+            en: {
+                navLogo: "Soyeong's Room",
+                heroBadge: "MY FOODIE SPACE",
+                heroDesc: "A university student whose brain works better finding restaurants than studying. When life gets boring, I find inspiration to shake the world from a single dish.",
+                tagChallenge: "#LoveNewFood🌶️",
+                aboutSubtitle: "WHO I AM",
+                aboutTitle: "Let Me Introduce Myself!",
+                introTitle: "🙋‍♀️ Hungry Student, Soyeong",
+                introText: "During exams, I'm a self-proclaimed 'hungry student' who maps out restaurants outside school before studying. My steps halt automatically at delicious smells, and I love trying new challenging foods.",
+                strengthTitle: "💪 My Ultimate Gourmet Radar",
+                strength1: "**No-Ad Radar:** Filtering out sponsored reviews on SNS with hawk eyes to spot real, authentic local restaurants.",
+                strength2: "**Sweet & Savory Route:** Salty food must be followed by sweet. Talented in mapping the perfect dessert route.",
+                gourmetSubtitle: "SOYEONG'S PICK",
+                gourmetTitle: "Soyeong's Top Life Restaurants",
+                tabMeal: "Life Meals 🍲",
+                tabDessert: "Life Desserts 🍰",
+                m1Name: "Nungdong Minari (Seongsu)",
+                m1Menu: "Minari Soup + Raw Beef Rice Bowl",
+                m1Desc: "Fragrant fresh minari combined with deep bone broth. The freshness of minari and rich broth truly fills your mouth.",
+                m1Tip: "Put plenty of fresh seasoned minari on top of the raw beef bibimbap and eat in one bite!",
+                m2Name: "Kang Dong Won (Mangwon)",
+                m2Menu: "Black Rice Pork & Jjambong",
+                m2Desc: "Black Rice Sweet and Sour Pork offers the ultimate crispy-outside, chewy-inside texture. The pairing with smokey-flavored spicy Jjambong is unparalleled.",
+                m2Tip: "The combination of Yuringi and Jjambong is incredible. Bring friends and order both!",
+                m3Name: "Taehwajang (Daejeon)",
+                m3Menu: "Menbosha & Century Jjajang",
+                m3Desc: "One of the best traditional restaurants in Daejeon. The Menbosha stuffed with whole minced shrimp toast is definitely number one.",
+                m3Tip: "Highly recommended as a perfect energy-charging meal course before sweeping bread at Sungsimdang.",
+                locBundang: "Bundang",
+                locSecret: "Secret",
+                d1Name: "MAKE A CAKE",
+                d1Menu: "Seasonal Fruit Cream Cake",
+                d1Desc: "Insists on authentic animal fresh cream to make incredibly moist, soft cakes. It literally melts the moment you put it in.",
+                d1Tip: "An absolute rule to hydrate with an Iced Americano (Eol-juk-ah pick!) after a sweet bite.",
+                d2Name: "AMA Coffee",
+                d2Menu: "Handmade Bakery & Tea Blending",
+                d2Desc: "A warm, beautiful alleyway café. Freshly baked financier cookies matching with specialty blended tea is touching.",
+                d2Tip: "A secret treasure place. Visit during quiet hours to enjoy deep contemplation.",
+                roadSubtitle: "Future RoadMap",
+                roadTitle: "My Delicious RoadMap 🏃‍♀️",
+                roadDesc: "The growth timeline of Soyeong, an aspiring developer prepping with joyful energy to taste more and newer foods in life.",
+                plan1Title: "Conquer Public Recruitment",
+                plan1Desc: "To secure funds for future restaurant conquests, I will boldly tackle IT developer job openings with absolute passion.",
+                plan2Title: "Build Premium SSAFY Projects",
+                plan2Desc: "Immerse fully in SSAFY, melting my foodie architect know-hows to deliver unique and practical web services.",
+                plan3Title: "Acquire Major Tech Certifications",
+                plan3Desc: "Gain key credentials to officially prove my solid frontend engineering capabilities.",
+                gbTitle: "Leave a message for Soyeong",
+                gbSubtitle: "Suggest a restaurant or leave warm encouraging words.",
+                gbSelectDefault: "Pick your curious menu",
+                gbSubmitBtn: "Send 흔적 to Soyeong 💌",
+                feedTitle: "Real-time Live Feed"
+            }
+        };
 
-            if (category === 'savory') {
-                // Style Active Button
-                savoryBtn.className = "flex-1 py-4 text-center font-bold text-[#FF6B35] border-b-2 border-[#FF6B35] hover:text-[#FF6B35] transition-all";
-                sweetBtn.className = "flex-1 py-4 text-center font-bold text-gray-400 border-b-2 border-transparent hover:text-[#FF6B35] transition-all";
+        function toggleLanguage() {
+            currentLang = currentLang === 'ko' ? 'en' : 'ko';
+            document.getElementById('langBtn').innerText = currentLang === 'ko' ? 'EN' : 'KO';
+            
+            // Translate all elements marked with data-key
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const key = el.getAttribute('data-key');
+                if (translations[currentLang][key]) {
+                    // Check if it has markdown formatting simulation
+                    let translatedText = translations[currentLang][key];
+                    if (translatedText.includes('**')) {
+                        translatedText = translatedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                        el.innerHTML = translatedText;
+                    } else {
+                        el.innerHTML = translatedText;
+                    }
+                }
+            });
+
+            // Re-trigger typing effect with translation
+            typingIndex = 0;
+            document.getElementById('typingTitle').innerHTML = '';
+            typeEffect();
+        }
+
+        // ----------------------------------------
+        // 타이핑 애니메이션 (Typing Effect)
+        // ----------------------------------------
+        const typingTexts = {
+            ko: "새로운 맛을 찾아 떠나는 맛집 탐방러, 박소영입니다.",
+            en: "I'm Soyeong Park, a foodie architect exploring new tastes."
+        };
+        let typingIndex = 0;
+
+        function typeEffect() {
+            const fullText = typingTexts[currentLang];
+            const titleEl = document.getElementById('typingTitle');
+            if (typingIndex < fullText.length) {
+                // Highlight text "박소영" or "Soyeong Park"
+                let currentSlice = fullText.slice(0, typingIndex + 1);
+                currentSlice = currentSlice.replace("박소영", "<span class='text-brandOrange'>박소영</span>");
+                currentSlice = currentSlice.replace("Soyeong Park", "<span class='text-brandOrange'>Soyeong Park</span>");
                 
-                // Show Savory List
-                savoryList.classList.remove('hidden');
-                sweetList.classList.add('hidden');
+                titleEl.innerHTML = currentSlice + "<span class='animate-pulse text-brandOrange'>|</span>";
+                typingIndex++;
+                setTimeout(typeEffect, 70);
             } else {
-                // Style Active Button
-                sweetBtn.className = "flex-1 py-4 text-center font-bold text-[#FF6B35] border-b-2 border-[#FF6B35] hover:text-[#FF6B35] transition-all";
-                savoryBtn.className = "flex-1 py-4 text-center font-bold text-gray-400 border-b-2 border-transparent hover:text-[#FF6B35] transition-all";
-                
-                // Show Sweet List
-                sweetList.classList.remove('hidden');
-                savoryList.classList.add('hidden');
+                // Remove cursor at the end
+                let finalSlice = fullText;
+                finalSlice = finalSlice.replace("박소영", "<span class='text-brandOrange'>박소영</span>");
+                finalSlice = finalSlice.replace("Soyeong Park", "<span class='text-brandOrange'>Soyeong Park</span>");
+                titleEl.innerHTML = finalSlice;
             }
         }
 
-        // Guestbook entry addition
-        function addEntry(event) {
-            event.preventDefault();
-
-            // Form inputs
-            const name = document.getElementById('input-name').value.trim();
-            const choice = document.getElementById('input-choice').value;
-            const message = document.getElementById('input-message').value.trim();
-
-            if (!name || !message) return;
-
-            // Target icons according to choices
-            let choiceEmoji = "🍽️";
-            if (choice.includes("미나리")) choiceEmoji = "🍲";
-            else if (choice.includes("강동원")) choiceEmoji = "🔥";
-            else if (choice.includes("태화장")) choiceEmoji = "🥢";
-            else if (choice.includes("케이크")) choiceEmoji = "🍰";
-            else if (choice.includes("아마")) choiceEmoji = "☕";
-
-            // Create feed element
-            const feedContainer = document.getElementById('feed-container');
-            const newEntry = document.createElement('div');
-            newEntry.className = "bg-[#FFFDF9] p-4 rounded-xl border border-gray-100 text-sm transform translate-y-2 opacity-0 transition-all duration-500 shadow-md";
-            newEntry.innerHTML = `
-                <div class="flex justify-between items-start mb-1">
-                    <span class="font-extrabold text-[#2B2D42]">${escapeHTML(name)}</span>
-                    <span class="text-xs text-gray-400 bg-orange-50 text-[#FF6B35] font-bold px-2 py-0.5 rounded">${escapeHTML(choice)} ${choiceEmoji}</span>
-                </div>
-                <p class="text-gray-600">${escapeHTML(message)}</p>
-            `;
-
-            // Insert at the top of the feed
-            feedContainer.insertBefore(newEntry, feedContainer.firstChild);
-
-            // Animate entry appearance
-            setTimeout(() => {
-                newEntry.classList.remove('translate-y-2', 'opacity-0');
-            }, 50);
-
-            // Reset form
-            document.getElementById('form-guestbook').reset();
-
-            // Display temporary Toast Notification
-            const toast = document.getElementById('toast-message');
-            toast.classList.remove('hidden');
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 3000);
+        // ----------------------------------------
+        // 다크모드 시스템 (LocalStorage 유지형)
+        // ----------------------------------------
+        function initDarkMode() {
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('darkToggleBtn').innerText = '🌙';
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('darkToggleBtn').innerText = '☀️';
+            }
         }
 
-        // Helper function to prevent XSS
-        function escapeHTML(str) {
-            return str.replace(/[&<>'"]/g, 
-                tag => ({
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    "'": '&#39;',
-                    '"': '&quot;'
-                }[tag] || tag)
-            );
+        function toggleDarkMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                document.getElementById('darkToggleBtn').innerText = '☀️';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                document.getElementById('darkToggleBtn').innerText = '🌙';
+            }
         }
+
+        // ----------------------------------------
+        // 스크롤 진행률 & 마우스 커스텀 커서 제어
+        // ----------------------------------------
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.scrollY || document.documentElement.scrollTop;
+            const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const progress = (scrollTop / docHeight) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+        });
+
+        const cakeCursor = document.getElementById('cakeCursor');
+        document.addEventListener('mousemove', (e) => {
+            cakeCursor.style.left = `${e.clientX}px`;
+            cakeCursor.style.top = `${e.clientY}px`;
+        });
+
+        // ----------------------------------------
+        // 배경의 은은한 점/파티클 애니메이션
+        // ----------------------------------------
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height + canvas.height;
+                this.size = Math.random() * 4 + 1;
+                this.speedY = Math.random() * -1 - 0.2;
+                this.opacity = Math.random() * 0.5 + 0.2;
+            }
+            update() {
+                this.y += this.speedY;
+                if (this.y < 0) {
+                    this.y = canvas.height;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 107, 53, ${this.opacity})`;
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            for (let i = 0; i < 40; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+
+        // ----------------------------------------
+        // 아카이브 탭 전환 제어
+        // ----------------------------------------
+        function switchTab(category) {
+            const btnMeal = document.getElementById('tabMeal');
+            const btnDessert = document.getElementById('tabDessert');
+            const secMeal = document.getElementById('gourmetMeal');
+            const secDessert = document.getElementById('gourmetDessert');
+
+            if (category === 'meal') {
+                btnMeal.className = "flex-1 py-3 text-center font-bold text-[#FF6B35] border-b-2 border-[#FF6B35] transition-all";
+                btnDessert.className = "flex-1 py-3 text-center font-bold text-gray-400 border-b-2 border-transparent transition-all";
+                secMeal.classList.remove('hidden');
+                secDessert.classList.add('hidden');
+            } else {
+                btnDessert.className = "flex-1 py-3 text-center font-bold text-[#FF6B35] border-b-2 border-[#FF6B35] transition-all";
+                btnMeal.className = "flex-1 py-3 text-center font-bold text-gray-400 border-b-2 border-transparent transition-all";
+                secDessert.classList.remove('hidden');
+                secMeal.classList.add('hidden');
+            }
+        }
+
+        // ----------------------------------------
+        // 로컬 스토리지 기반 영구 방명록 시스템
+        // ----------------------------------------
+        let guestbookData = [];
+
+        function initGuestbook() {
+            const stored = localStorage.getItem('soyeong_guestbook');
+            if (stored) {
+                guestbookData = JSON.parse(stored);
+            } else {
+                // 초깃값 데이터 세팅
+                guestbookData = [
+                    { id: 1, name: "미식탐사 대장", pick: "성수 능동미나리", message: "소영님의 팁대로 미나리 무침을 육회비빔밥에 가득 올려 먹으니 진심 감동이었습니다.. 대박!", date: "2026.07.13" },
+                    { id: 2, name: "얼죽아 동지", pick: "메이크어케이크", message: "겨울에도 아이스 아메리카노랑 딸기 생크림 케이크 조합은 못 참죠!! 응원합니다.", date: "2026.07.13" }
+                ];
+                saveGuestbook();
+            }
+            renderGuestbook();
+        }
+
+        function saveGuestbook() {
+            localStorage.setItem('soyeong_guestbook', JSON.stringify(guestbookData));
+        }
+
+        function renderGuestbook() {
+            const feedList = document.getElementById('feedList');
+            feedList.innerHTML = '';
+            
+            guestbookData.forEach(entry => {
+                const item = document.createElement('div');
+                item.className = "p-5 bg-gray-50 dark:bg-darkBg rounded-2xl border border-gray-100 dark:border-gray-800 text-sm flex justify-between items-start transition-all hover:border-orange-200 dark:hover:border-orange-950/50";
+                item.innerHTML = `
+                    <div class="flex-grow">
+                        <div class="flex flex-wrap items-center gap-2 mb-2">
+                            <span class="font-extrabold text-gray-800 dark:text-gray-200">${escapeHtml(entry.name)}</span>
+                            <span class="text-[10px] bg-orange-100 dark:bg-orange-950/50 text-[#FF6B35] font-bold px-2 py-0.5 rounded-full">${escapeHtml(entry.pick)}</span>
+                            <span class="text-[10px] text-gray-400 font-mono">${entry.date}</span>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">${escapeHtml(entry.message)}</p>
+                    </div>
+                    <button onclick="deleteEntry(${entry.id})" class="text-xs text-red-400 hover:text-red-600 font-medium ml-3 transition-colors shrink-0" title="삭제">✕</button>
+                `;
+                feedList.prepend(item);
+            });
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('gbName');
+            const pickSelect = document.getElementById('gbPick');
+            const msgInput = document.getElementById('gbMsg');
+
+            const newEntry = {
+                id: Date.now(),
+                name: nameInput.value.trim(),
+                pick: pickSelect.value || "추천 맛집 🍽️",
+                message: msgInput.value.trim(),
+                date: new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/ /g, '').slice(0, -1)
+            };
+
+            guestbookData.push(newEntry);
+            saveGuestbook();
+            renderGuestbook();
+
+            // 폼 리셋
+            nameInput.value = '';
+            pickSelect.selectedIndex = 0;
+            msgInput.value = '';
+        }
+
+        function deleteEntry(id) {
+            if (confirm("작성하신 방명록을 지우시겠습니까?")) {
+                guestbookData = guestbookData.filter(entry => entry.id !== id);
+                saveGuestbook();
+                renderGuestbook();
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        // ----------------------------------------
+        // 초기화 실행
+        // ----------------------------------------
+        window.onload = () => {
+            initDarkMode();
+            typeEffect();
+            initGuestbook();
+        };
     </script>
 </body>
 </html>
